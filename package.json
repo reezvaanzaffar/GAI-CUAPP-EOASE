@@ -12,12 +12,14 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@date-io/date-fns": "^2.16.0",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
     "@hubspot/api-client": "^13.0.0",
     "@mailchimp/mailchimp_marketing": "^3.0.80",
     "@mui/icons-material": "^5.15.15",
     "@mui/material": "^5.15.15",
+    "@mui/x-date-pickers": "^5.0.0",
     "@prisma/client": "^5.22.0",
     "@react-oauth/google": "^0.12.2",
     "@segment/analytics-node": "2.2.1",
@@ -28,6 +30,7 @@
     "axios": "^1.6.8",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
+    "critters": "^0.0.23",
     "date-fns": "^2.30.0",
     "framer-motion": "^10.16.4",
     "google-auth-library": "^9.15.1",
@@ -40,6 +43,7 @@
     "nodemailer": "^6.10.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "recharts": "^2.15.3",
     "slack": "^11.0.2",
     "stripe": "^18.2.0",
     "uuid": "^9.0.1",
@@ -59,7 +63,7 @@
     "@types/jest": "^29.5.6",
     "@types/lodash": "^4.14.202",
     "@types/mailchimp__mailchimp_marketing": "^3.0.21",
-    "@types/node": "^20.10.5",
+    "@types/node": "^20.17.57",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
     "@types/uuid": "^9.0.8",
@@ -76,6 +80,7 @@
     "postcss": "^8.4.32",
     "prisma": "^5.10.2",
     "tailwindcss": "^3.4.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
   "jest": {

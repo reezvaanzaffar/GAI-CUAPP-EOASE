@@ -34,8 +34,12 @@ export default function LoginPage() {
     setError('');
 
     try {
-      await login({ email, password });
-      router.push(from);
+      const loggedInUser = await login({ email, password });
+      if (loggedInUser?.role === 'ADMIN' || loggedInUser?.role === 'admin') {
+        router.push('/admin/analytics');
+      } else {
+        router.push('/portal');
+      }
     } catch (err) {
       setError('Invalid email or password');
     }

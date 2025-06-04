@@ -2,8 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthService } from '@/services/auth';
-import type { User, LoginCredentials, RegisterCredentials } from '@/types/auth';
+import { signIn, signOut, useSession } from 'next-auth/react';
+import type { User, RegisterCredentials } from '@/types/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -19,49 +19,33 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  useEffect(() => {
-    // Check for existing session
-    const checkSession = async () => {
-      try {
-        const response = await fetch('/api/auth/session');
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-        }
-      } catch (err) {
-        console.error('Session check failed:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkSession();
-  }, []);
+  // Set user and loading state from NextAuth session
+  const user = session?.user ?? null;
+  const loading = status === 'loading';
 
   const login = async (email: string, password: string) => {
-    try {
-      setError(null);
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Login failed');
-      }
-
-      const data = await response.json();
-      setUser(data.user);
-    } catch (err: any) {
-      setError(err.message);
-      throw err;
+    setError(null);
+    const res = await signIn('credentials', {
+      email,
+      password,
+      redirect: false,
+    });
+    if (res?.error) {
+      setError(res.error);
+      throw new Error(res.error);
     }
+    // Optionally, reload or redirect after login
+    router.refresh?.();
+  };
+
+  const logout = async () => {
+    setError(null);
+    await signOut({ redirect: false });
+    router.refresh?.();
   };
 
   const register = async (credentials: RegisterCredentials) => {
@@ -77,17 +61,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const data = await response.json();
         throw new Error(data.error || 'Registration failed');
       }
-    } catch (err: any) {
-      setError(err.message);
-      throw err;
-    }
-  };
-
-  const logout = async () => {
-    try {
-      setError(null);
-      await fetch('/api/auth/logout', { method: 'POST' });
-      setUser(null);
     } catch (err: any) {
       setError(err.message);
       throw err;
@@ -156,4 +129,4 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-} 
+}

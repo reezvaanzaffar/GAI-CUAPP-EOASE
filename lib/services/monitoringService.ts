@@ -14,6 +14,11 @@ class MonitoringService {
       context,
     });
   }
+
+  trackUserExperience(data: any) {
+    // Stub: In a real implementation, this would send UX data to a monitoring service
+    console.log('User experience tracked:', data);
+  }
 }
 
-export const monitoringService = new MonitoringService(); 
+export const monitoringService = new MonitoringService();

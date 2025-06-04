@@ -1,13 +1,23 @@
-import type { User, LoginCredentials, RegisterCredentials } from '@/types/auth';
-
 export class AuthService {
   async login(credentials: LoginCredentials): Promise<User> {
     // Simulate API call
-    return { 
-      id: '1', 
+    if (
+      credentials.email === 'test@example.com' &&
+      credentials.password === 'password123' // replace with your test password
+    ) {
+      return {
+        id: '1',
+        email: credentials.email,
+        name: 'Test User',
+        role: 'ADMIN', // <-- Set correct role
+      } as User;
+    }
+    // Default to user
+    return {
+      id: '2',
       email: credentials.email,
-      name: 'Test User',
-      role: 'user'
+      name: 'Regular User',
+      role: 'user',
     } as User;
   }
 

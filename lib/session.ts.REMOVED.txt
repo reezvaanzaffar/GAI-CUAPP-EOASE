@@ -1,0 +1,1 @@
+This file has been removed. All session management is now handled by NextAuth.js JWT sessions.
