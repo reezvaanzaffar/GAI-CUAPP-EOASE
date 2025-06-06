@@ -4,34 +4,21 @@ import { cookies } from 'next/headers';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { validateToken, createToken, clearAndRegenerateTokens } from '@/lib/auth';
+import { getToken } from 'next-auth/jwt';
 
 const prisma = new PrismaClient();
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const session = await getServerSession(authOptions);
-    console.log('Session retrieved by getServerSession:', session);
-
-    if (!session) {
-      console.log('No session found, checking cookies...');
-      const cookieStore = cookies();
-      const sessionToken = cookieStore.get('session_token')?.value;
-
-      console.log('Session token from cookies:', sessionToken);
-
-      if (sessionToken) {
-        const validatedToken = validateToken(sessionToken);
-        console.log('Validated token:', validatedToken);
-      }
-
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token) {
       return NextResponse.json(
         { error: 'No session found' },
         { status: 401 }
       );
     }
-
     return NextResponse.json(
-      { user: session.user },
+      { user: { id: token.sub, role: token.role } },
       { status: 200 }
     );
   } catch (error) {

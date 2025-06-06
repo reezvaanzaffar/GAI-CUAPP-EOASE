@@ -9,42 +9,19 @@ import {
   Typography,
   Paper,
   Alert,
+  Divider,
+  CircularProgress,
 } from '@mui/material';
-import { useAuth } from '@/hooks/useAuth';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Google as GoogleIcon, GitHub as GitHubIcon } from '@mui/icons-material';
+import { useGoogleLogin } from '@react-oauth/google';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import { signIn } from 'next-auth/react';
+import { LoginForm } from '@/components/auth/LoginForm';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const { login, user } = useAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const from = searchParams?.get('from') || '/portal';
-
-  useEffect(() => {
-    // If already authenticated, redirect to the intended destination
-    if (user) {
-      router.push(from);
-    }
-  }, [user, router, from]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    try {
-      const loggedInUser = await login({ email, password });
-      if (loggedInUser?.role === 'ADMIN' || loggedInUser?.role === 'admin') {
-        router.push('/admin/analytics');
-      } else {
-        router.push('/portal');
-      }
-    } catch (err) {
-      setError('Invalid email or password');
-    }
-  };
-
   return (
     <Container component="main" maxWidth="xs">
       <Box
@@ -65,48 +42,53 @@ export default function LoginPage() {
             width: '100%',
           }}
         >
-          <Typography component="h1" variant="h5">
-            Sign in
-          </Typography>
-          {error && (
-            <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
-              {error}
-            </Alert>
-          )}
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-            >
-              Sign In
-            </Button>
-          </Box>
+          <LoginForm />
+          <Divider sx={{ my: 2 }}>OR</Divider>
+          <Button
+            fullWidth
+            variant="outlined"
+            startIcon={<GitHubIcon />}
+            onClick={() => signIn('github', { callbackUrl: '/dashboard' })}
+            sx={{ mb: 2 }}
+          >
+            CONTINUE WITH GITHUB
+          </Button>
+          <Button
+            fullWidth
+            variant="outlined"
+            startIcon={<FacebookIcon />}
+            onClick={() => signIn('facebook', { callbackUrl: '/dashboard' })}
+            sx={{ mb: 2 }}
+          >
+            CONTINUE WITH FACEBOOK
+          </Button>
+          <Button
+            fullWidth
+            variant="outlined"
+            startIcon={<GoogleIcon />}
+            onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+            sx={{ mb: 2 }}
+          >
+            CONTINUE WITH GOOGLE
+          </Button>
+          <Button
+            fullWidth
+            variant="outlined"
+            startIcon={<LinkedInIcon />}
+            onClick={() => signIn('linkedin', { callbackUrl: '/dashboard' })}
+            sx={{ mb: 2 }}
+          >
+            CONTINUE WITH LINKEDIN
+          </Button>
+          <Button
+            fullWidth
+            variant="outlined"
+            startIcon={<TwitterIcon />}
+            onClick={() => signIn('twitter', { callbackUrl: '/dashboard' })}
+            sx={{ mb: 2 }}
+          >
+            CONTINUE WITH TWITTER
+          </Button>
         </Paper>
       </Box>
     </Container>

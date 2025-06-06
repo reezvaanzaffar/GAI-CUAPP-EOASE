@@ -19,7 +19,7 @@ export async function roleMiddleware(request: NextRequest) {
   if (!sessionToken) {
     const isPublicRoute = roleAccess.public.some(path => pathname.startsWith(path));
     if (!isPublicRoute) {
-      return NextResponse.redirect(new URL('/auth/login', request.url));
+      return NextResponse.redirect(new URL('/login', request.url));
     }
     return NextResponse.next();
   }
@@ -32,7 +32,7 @@ export async function roleMiddleware(request: NextRequest) {
     });
 
     if (!session || session.expires < new Date()) {
-      return NextResponse.redirect(new URL('/auth/login', request.url));
+      return NextResponse.redirect(new URL('/login', request.url));
     }
 
     const userRole = session.user.role;
@@ -49,6 +49,6 @@ export async function roleMiddleware(request: NextRequest) {
     return NextResponse.next();
   } catch (error) {
     console.error('Role middleware error:', error);
-    return NextResponse.redirect(new URL('/auth/login', request.url));
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 } 

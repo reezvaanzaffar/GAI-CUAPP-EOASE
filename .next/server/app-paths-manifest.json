@@ -1,4 +1,15 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
   "/api/auth/session/route": "app/api/auth/session/route.js",
-  "/api/analytics/dashboard/route": "app/api/analytics/dashboard/route.js"
+  "/api/leads/[leadId]/documents/route": "app/api/leads/[leadId]/documents/route.js",
+  "/sales/dashboard/page": "app/sales/dashboard/page.js",
+  "/api/leads/route": "app/api/leads/route.js",
+  "/api/leads/metrics/route": "app/api/leads/metrics/route.js",
+  "/api/leads/alerts/route": "app/api/leads/alerts/route.js",
+  "/api/leads/[leadId]/communications/route": "app/api/leads/[leadId]/communications/route.js",
+  "/api/leads/[leadId]/tasks/route": "app/api/leads/[leadId]/tasks/route.js",
+  "/api/leads/[leadId]/notes/route": "app/api/leads/[leadId]/notes/route.js",
+  "/login/page": "app/login/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/dashboard/page": "app/dashboard/page.js"
 }

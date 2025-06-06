@@ -8,4 +8,4 @@ if (typeof window === 'undefined') {
   throw new Error('PrismaClient is not supported in the browser.');
 }
 
-export default prisma;
+export { prisma };

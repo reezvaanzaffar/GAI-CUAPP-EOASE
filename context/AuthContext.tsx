@@ -9,7 +9,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (credentials: { email?: string; password?: string; token?: string }) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -27,25 +27,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const user = session?.user ?? null;
   const loading = status === 'loading';
 
-  const login = async (email: string, password: string) => {
+  const login = async (credentials: { email?: string; password?: string; token?: string }) => {
     setError(null);
-    const res = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-    });
-    if (res?.error) {
-      setError(res.error);
-      throw new Error(res.error);
+    try {
+      if (credentials.token) {
+        // Handle Google login token
+        const response = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: credentials.token }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Authentication failed');
+        }
+
+        // Sign in with the session token
+        const data = await response.json();
+        await signIn('credentials', {
+          token: data.token,
+          redirect: false,
+        });
+      } else if (credentials.email && credentials.password) {
+        // Handle regular email/password login
+        const res = await signIn('credentials', {
+          email: credentials.email,
+          password: credentials.password,
+          redirect: false,
+        });
+
+        if (res?.error) {
+          throw new Error(res.error);
+        }
+      } else {
+        throw new Error('Invalid login credentials');
+      }
+
+      // Refresh the page to update the session
+      router.refresh?.();
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
     }
-    // Optionally, reload or redirect after login
-    router.refresh?.();
   };
 
   const logout = async () => {
     setError(null);
-    await signOut({ redirect: false });
-    router.refresh?.();
+    try {
+      await signOut({ redirect: false });
+      router.refresh?.();
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
   };
 
   const register = async (credentials: RegisterCredentials) => {

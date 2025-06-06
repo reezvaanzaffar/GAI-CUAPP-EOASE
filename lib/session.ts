@@ -6,6 +6,8 @@ const prisma = new PrismaClient();
 
 export interface SessionOptions {
   rememberMe?: boolean;
+  ipAddress?: string;
+  userAgent?: string;
 }
 
 export async function createSession(userId: string, options: SessionOptions = {}) {
@@ -19,6 +21,8 @@ export async function createSession(userId: string, options: SessionOptions = {}
       sessionToken,
       userId,
       expires,
+      ipAddress: options.ipAddress,
+      userAgent: options.userAgent,
     },
   });
 

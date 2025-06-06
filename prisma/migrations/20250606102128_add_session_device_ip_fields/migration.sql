@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Session" ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN     "ipAddress" TEXT,
+ADD COLUMN     "userAgent" TEXT;

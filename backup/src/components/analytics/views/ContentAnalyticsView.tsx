@@ -274,7 +274,7 @@ export const ContentAnalyticsView: React.FC = () => {
                         <TableCell align="right">{content.shares}</TableCell>
                         <TableCell align="right">{content.averageTimeSpent}</TableCell>
                         <TableCell align="right">
-                          {content.lastViewed.toLocaleDateString()}
+                          {content.lastViewed && new Date(content.lastViewed).toLocaleDateString()}
                         </TableCell>
                       </TableRow>
                     ))

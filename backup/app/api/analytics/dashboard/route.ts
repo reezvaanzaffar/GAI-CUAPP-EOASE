@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { PrismaClient } from '@prisma/client';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import type { DashboardData } from '@/types';
 
 const prisma = new PrismaClient();
@@ -30,6 +30,9 @@ export async function GET() {
       orderBy: {
         lastExecution: 'desc',
       },
+      include: {
+        workflow: true,
+      },
     });
 
     // Fetch analytics data
@@ -38,6 +41,10 @@ export async function GET() {
       prisma.automationLog.count(),
       prisma.order.count(),
     ]);
+
+    // Debug logs for backend data
+    console.log('Performance metrics:', performanceMetrics);
+    console.log('Visitors:', visitors, 'PageViews:', pageViews, 'Orders:', orders);
 
     // Calculate bounce rate (simplified example)
     const bounceRate = 35.5; // This would be calculated based on actual user behavior

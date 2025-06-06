@@ -83,6 +83,87 @@ async function main() {
     },
   });
 
+  // Create a sales user for Google login
+  const salesUser = await prisma.user.upsert({
+    where: { email: 'reezvaan@gmail.com' },
+    update: {},
+    create: {
+      email: 'reezvaan@gmail.com',
+      name: 'Reezvaan',
+      role: 'sales',
+      emailVerified: true,
+    },
+  });
+
+  // Seed diverse leads for sales dashboard
+  const leadStatuses = ['NEW', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATION', 'WON', 'LOST'];
+  const leadSources = ['Website', 'Referral', 'Ad', 'Event'];
+  const priorities = ['HIGH', 'MEDIUM', 'LOW'];
+  const leads = [];
+  for (let i = 0; i < 20; i++) {
+    const status = leadStatuses[Math.floor(Math.random() * leadStatuses.length)];
+    const source = leadSources[Math.floor(Math.random() * leadSources.length)];
+    const priority = priorities[Math.floor(Math.random() * priorities.length)];
+    const expectedValue = Math.floor(Math.random() * 90000) + 10000;
+    const createdAt = new Date(Date.now() - Math.floor(Math.random() * 60) * 24 * 60 * 60 * 1000);
+    const expectedCloseDate = new Date(createdAt.getTime() + Math.floor(Math.random() * 30 + 10) * 24 * 60 * 60 * 1000);
+    const userId = i % 2 === 0 ? salesUser.id : user.id;
+    const lead = await prisma.lead.create({
+      data: {
+        name: `Lead ${i + 1}`,
+        companyName: `Company ${i + 1}`,
+        contactName: `Contact ${i + 1}`,
+        contactEmail: `contact${i + 1}@example.com`,
+        contactPhone: `555-000${i + 1}`,
+        status,
+        priority,
+        expectedValue,
+        expectedCloseDate,
+        userId,
+        source,
+        createdAt,
+        updatedAt: createdAt,
+      },
+    });
+    leads.push(lead);
+    // Seed multiple communications, notes, and tasks for every lead
+    for (let j = 0; j < 3; j++) {
+      await prisma.leadCommunication.create({
+        data: {
+          leadId: lead.id,
+          type: ['call', 'email', 'meeting'][j % 3],
+          content: `Sample ${['call', 'email', 'meeting'][j % 3]} communication for lead ${i + 1}`,
+          createdAt: new Date(createdAt.getTime() + j * 60 * 60 * 1000),
+        },
+      });
+      await prisma.leadNote.create({
+        data: {
+          leadId: lead.id,
+          content: `Note ${j + 1} for lead ${i + 1}`,
+          createdAt: new Date(createdAt.getTime() + j * 2 * 60 * 60 * 1000),
+        },
+      });
+      await prisma.leadTask.create({
+        data: {
+          leadId: lead.id,
+          title: `Task ${j + 1} for lead ${i + 1}`,
+          description: `Task description ${j + 1} for lead ${i + 1}`,
+          dueDate: new Date(createdAt.getTime() + (j + 1) * 24 * 60 * 60 * 1000),
+        },
+      });
+    }
+    for (let j = 0; j < 2; j++) {
+      await prisma.leadDocument.create({
+        data: {
+          leadId: lead.id,
+          name: `Document ${j + 1} for lead ${i + 1}`,
+          type: j % 2 === 0 ? 'PDF' : 'DOCX',
+          url: `https://example.com/docs/lead${i + 1}_doc${j + 1}.${j % 2 === 0 ? 'pdf' : 'docx'}`,
+        },
+      });
+    }
+  }
+
   // Print out seeded data for verification
   const metrics = await prisma.automationMetrics.findMany({ include: { workflow: true } });
   const users = await prisma.user.findMany();

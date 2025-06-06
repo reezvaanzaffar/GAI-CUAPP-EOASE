@@ -351,7 +351,7 @@ export const RevenueAnalyticsView: React.FC = () => {
                     revenueData.map((data) => (
                       <TableRow key={data.id}>
                         <TableCell>
-                          {data.date.toLocaleDateString()}
+                          {data.date && new Date(data.date).toLocaleDateString()}
                         </TableCell>
                         <TableCell>{data.source}</TableCell>
                         <TableCell>{data.category}</TableCell>

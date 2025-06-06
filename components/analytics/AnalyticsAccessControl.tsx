@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, Button } from '@mui/material';
-import { useAuth } from '../../hooks/useAuth';
+import { useSession } from 'next-auth/react';
 
 interface AnalyticsAccessControlProps {
   children: React.ReactNode;
@@ -21,7 +21,12 @@ export const AnalyticsAccessControl: React.FC<AnalyticsAccessControlProps> = ({
   children,
   requiredRole,
 }) => {
-  const { user } = useAuth();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+
+  if (status === 'loading') {
+    return null;
+  }
 
   if (!user) {
     return (

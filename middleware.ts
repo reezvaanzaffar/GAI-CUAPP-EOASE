@@ -1,76 +1,54 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
+import { securityMiddleware } from './middleware/security';
 
-// Add paths that don't require authentication
-const publicPaths = [
-  '/auth/login',
-  '/auth/register',
-  '/auth/forgot-password',
-  '/auth/reset-password',
-  '/auth/verify-email',
-  '/api/auth/login',
-  '/api/auth/register',
-  '/api/auth/forgot-password',
-  '/api/auth/reset-password',
-  '/api/auth/verify-email',
-  '/api/auth/google',
-];
+// Define public paths that don't require authentication
+const publicPaths = ['/login', '/register', '/auth/login', '/auth/register', '/auth/verify-email'];
 
-// Add paths that require authentication
+// Define protected paths that require authentication
 const protectedPaths = [
-  '/portal',
   '/dashboard',
   '/profile',
   '/settings',
+  '/admin',
+  '/api/protected',
 ];
 
-// Add paths that are only accessible when not authenticated
-const authPaths = ['/login', '/register', '/forgot-password'];
+// Define auth paths (login, register, etc.)
+const authPaths = ['/login', '/register', '/auth/login', '/auth/register'];
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  console.log('Middleware invoked for path:', pathname);
-
-  // Allow requests to session and analytics APIs
-  if (pathname.startsWith('/api/auth/session') || pathname.startsWith('/api/analytics/dashboard') || pathname.startsWith('/api/auth/regenerate')) {
-    console.log('Middleware allowing access to:', pathname);
-    return NextResponse.next();
+  // Apply security middleware first
+  const securityResponse = securityMiddleware(request);
+  if (securityResponse.status !== 200) {
+    return securityResponse;
   }
+
+  const path = request.nextUrl.pathname;
 
   // Check if the path is public
-  const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
-
-  // Get the session token from cookies
-  const sessionToken = request.cookies.get('session_token')?.value;
-
-  // If the path is public, allow access
-  if (isPublicPath) {
+  if (publicPaths.some((publicPath) => path.startsWith(publicPath))) {
     return NextResponse.next();
   }
 
-  // If there's no session token and the path is not public, redirect to login
-  if (!sessionToken) {
-    const url = new URL('/auth/login', request.url);
-    url.searchParams.set('callbackUrl', pathname);
-    return NextResponse.redirect(url);
-  }
+  // Get the token using NextAuth JWT
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
-  const token = request.cookies.get('auth_token');
+  // Check if the path requires authentication
+  if (protectedPaths.some((protectedPath) => path.startsWith(protectedPath))) {
+    if (!token) {
+      // Redirect to login if not authenticated
+      const url = new URL('/login', request.url);
+      url.searchParams.set('callbackUrl', path);
+      return NextResponse.redirect(url);
+    }
 
-  // Check if the path is protected
-  const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
-  const isAuthPath = authPaths.some(path => pathname.startsWith(path));
-
-  // If trying to access protected path without auth
-  if (isProtectedPath && !token) {
-    const url = new URL('/login', request.url);
-    url.searchParams.set('from', pathname);
-    return NextResponse.redirect(url);
-  }
-
-  // If trying to access auth pages while authenticated
-  if (isAuthPath && token) {
-    return NextResponse.redirect(new URL('/portal', request.url));
+    // Check if the path is an auth path and user is already authenticated
+    if (authPaths.some((authPath) => path.startsWith(authPath)) && token) {
+      // Redirect to dashboard if already authenticated
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
   }
 
   return NextResponse.next();

@@ -70,7 +70,7 @@ export default async function OrderDetailPage({
                     <div>
                       <dt className="text-sm font-medium text-gray-500">Date</dt>
                       <dd className="mt-1 text-sm text-gray-900">
-                        {new Date(order.createdAt).toLocaleDateString()}
+                        {order.createdAt && new Date(order.createdAt).toLocaleDateString()}
                       </dd>
                     </div>
                     <div>

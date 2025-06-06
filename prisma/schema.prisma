@@ -31,6 +31,14 @@ model User {
   engagementLevel String   @default("low")
   events          PersonalizationEvent[]
   verificationTokens VerificationToken[]
+  twoFactorSecret String?
+  twoFactorEnabled Boolean @default(false)
+  twoFactorTempSecret String?
+  riskScore           Int       @default(0)
+  lastRiskAssessment  DateTime?
+  trustedDevices      TrustedDevice[]
+  loginAttempts       LoginAttempt[]
+  leads               Lead[]
 }
 
 model Product {
@@ -75,6 +83,9 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
 }
 
 model VerificationToken {
@@ -282,6 +293,82 @@ model OrderItem {
   productId String
   quantity  Int
   price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Lead-related models for sales dashboard
+model Lead {
+  id                String   @id @default(cuid())
+  name              String
+  companyName       String
+  contactName       String
+  contactEmail      String
+  contactPhone      String
+  status            String
+  priority          String
+  expectedValue     Float
+  expectedCloseDate DateTime
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  communications    LeadCommunication[]
+  notes             LeadNote[]
+  tasks             LeadTask[]
+  metrics           LeadMetric[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  source            String?
+  documents         LeadDocument[]
+}
+
+model LeadCommunication {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  type      String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LeadNote {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LeadTask {
+  id          String   @id @default(cuid())
+  leadId      String
+  lead        Lead     @relation(fields: [leadId], references: [id])
+  title       String
+  description String
+  dueDate     DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model LeadMetric {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  score     Int
+  type      String
+  value     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LeadDocument {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  name      String
+  type      String
+  url       String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -577,4 +664,39 @@ model IntegrationMetric {
   timestamp       DateTime @default(now())
   integrationId   String
   integration     IntegrationProject @relation(fields: [integrationId], references: [id])
+}
+
+model TrustedDevice {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId    String   @unique
+  deviceName  String
+  deviceType  String
+  lastUsed    DateTime @default(now())
+  createdAt   DateTime @default(now())
+  ipAddress   String?
+  userAgent   String?
+  isTrusted   Boolean  @default(false)
+  trustExpiry DateTime?
+
+  @@index([userId])
+}
+
+model LoginAttempt {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  email       String
+  ipAddress   String
+  userAgent   String
+  success     Boolean
+  riskScore   Int      @default(0)
+  createdAt   DateTime @default(now())
+  location    Json?
+  deviceType  String?
+
+  @@index([userId])
+  @@index([email])
+  @@index([ipAddress])
 }

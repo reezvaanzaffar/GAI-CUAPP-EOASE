@@ -190,7 +190,7 @@ const ContentGovernance: React.FC<ContentGovernanceProps> = ({
                   Version {version.version} - {version.status}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  By {version.author} on {version.timestamp.toLocaleDateString()}
+                  By {version.author} on {version.timestamp && new Date(version.timestamp).toLocaleDateString()}
                 </Typography>
                 {version.comments.map((comment) => (
                   <Chip

@@ -10,7 +10,7 @@ export async function GET() {
     const session = await getServerSession(authOptions);
     console.log('Dashboard endpoint - Session retrieved by getServerSession:', session);
 
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!session?.user) {
       console.log('Dashboard endpoint - Unauthorized access attempt:', session);
       return NextResponse.json(
         { error: 'Unauthorized' },

@@ -31,7 +31,6 @@ import {
 import {
   FilterList as FilterIcon,
   Add as AddIcon,
-  Export as ExportIcon,
   Notifications as NotificationsIcon,
   Email as EmailIcon,
   Phone as PhoneIcon,
@@ -98,6 +97,28 @@ const ConsolidatedLeadManagementDashboard: React.FC<Props> = ({ userRole, access
   useEffect(() => {
     loadData();
   }, [filter]);
+
+  useEffect(() => {
+    if (!selectedLead) return;
+    // Only fetch for non-overview tabs
+    if (activeTab > 0) {
+      (async () => {
+        try {
+          if (activeTab === 1) {
+            setCommunications(await leadService.getCommunications(selectedLead.id));
+          } else if (activeTab === 2) {
+            setNotes(await leadService.getNotes(selectedLead.id));
+          } else if (activeTab === 3) {
+            setTasks(await leadService.getTasks(selectedLead.id));
+          } else if (activeTab === 4) {
+            setDocuments(await leadService.getDocuments(selectedLead.id));
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'An error occurred');
+        }
+      })();
+    }
+  }, [selectedLead, activeTab]);
 
   const loadData = async () => {
     try {
@@ -233,7 +254,7 @@ const ConsolidatedLeadManagementDashboard: React.FC<Props> = ({ userRole, access
             <AddIcon />
           </IconButton>
           <IconButton onClick={() => handleExport('csv')}>
-            <ExportIcon />
+            <Button>Export</Button>
           </IconButton>
           <IconButton>
             <NotificationsIcon />
@@ -369,8 +390,8 @@ const ConsolidatedLeadManagementDashboard: React.FC<Props> = ({ userRole, access
                         Expected Value: ${selectedLead.expectedValue}
                       </Typography>
                       <Typography>
-                        Expected Close Date:{' '}
-                        {selectedLead.expectedCloseDate?.toLocaleDateString()}
+                        Expected Close Date: {" "}
+                        {selectedLead.expectedCloseDate && new Date(selectedLead.expectedCloseDate).toLocaleDateString()}
                       </Typography>
                     </Grid>
                   </Grid>
@@ -428,7 +449,7 @@ const ConsolidatedLeadManagementDashboard: React.FC<Props> = ({ userRole, access
                             <>
                               <Typography variant="body2">{task.description}</Typography>
                               <Typography variant="caption">
-                                Due: {task.dueDate?.toLocaleDateString()}
+                                Due: {task.dueDate && new Date(task.dueDate).toLocaleDateString()}
                               </Typography>
                             </>
                           }

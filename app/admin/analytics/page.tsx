@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
-import { authOptions } from '@/lib/auth';
+import { authOptions } from '@/lib/authOptions';
 import AdminHeader from '@/components/admin/AdminHeader';
 import { ConsolidatedAnalyticsDashboard } from '@/components/analytics/ConsolidatedAnalyticsDashboard';
 
